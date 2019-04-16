@@ -1,0 +1,54 @@
+name:                csn-search
+version:             0.1.0.0
+github:              "huytd/csn-search"
+license:             BSD3
+author:              "Huy Tran"
+maintainer:          "huy@thefullsnack.com"
+copyright:           "2019 Huy Tran"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/huytd/csn-search#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- conduit
+- http-conduit
+- html-conduit
+- xml-conduit
+- bytestring
+- text
+
+library:
+  source-dirs: src
+
+executables:
+  csn-search:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - csn-search
+
+tests:
+  csn-search-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - csn-search
