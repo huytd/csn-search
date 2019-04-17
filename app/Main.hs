@@ -4,10 +4,9 @@ module Main where
 
 import Network.HTTP.Simple
 import Text.HTML.DOM
-import Text.XML (Document, Node)
-import Text.XML.Cursor (orSelf, (&/), child, parent, Axis, (&|), Cursor, hasAttribute, attributeIs,  content, attribute, element, fromDocument, node, ($//), (>=>), (&//))
-import Data.Maybe (listToMaybe)
-import Data.Text (Text, unpack)
+import Text.XML (Document)
+import Text.XML.Cursor ((&|), hasAttribute, attributeIs, attribute, element, fromDocument, ($//), (>=>), (&//))
+import Data.Text (unpack)
 import Data.List
 import System.Environment
 
