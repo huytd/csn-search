@@ -5,7 +5,7 @@ module Main where
 import Network.HTTP.Simple
 import Text.HTML.DOM
 import Text.XML (Document)
-import Text.XML.Cursor ((&|), hasAttribute, attributeIs, attribute, element, fromDocument, ($//), (>=>), (&//))
+import Text.XML.Cursor (Cursor, hasAttribute, attributeIs, attribute, element, fromDocument, ($//), (>=>), (&//))
 import Data.Text (unpack)
 import Data.List
 import System.Environment
@@ -21,31 +21,33 @@ parseUrl url = do
   doc <- httpSink req $ const sinkDoc
   return doc
 
+getSearchResultElements :: Document -> [Cursor]
+getSearchResultElements document = elements where
+  cursor = fromDocument document
+  elements = cursor
+    $// element "table" >=> attributeIs "class" "tbtable"
+    &// element "tr"
+    &// element "td" >=> attributeIs "style" "font-size: 10px;"
+    &// element "a" >=> hasAttribute "title"
+
+getAlbumResultElements :: Document -> [Cursor]
+getAlbumResultElements document = elements where
+  cursor = fromDocument document
+  elements = cursor
+    $// element "table" >=> attributeIs "class" "tbtable"
+    &// element "tr"
+    &// element "a" >=> attributeIs "class" "musictitle"
+    
 parseAlbumData :: Document -> [AlbumItem]
 parseAlbumData document = result where
-  cursor = fromDocument document
-  _links = cursor
-    $// element "table" >=> attributeIs "class" "tbtable"
-    &// element "tr"
-    &// element "td" >=> attributeIs "style" "font-size: 10px;"
-    &// element "a" >=> hasAttribute "title"
-    &| attribute "href"
-  _album_links = cursor
-    $// element "table" >=> attributeIs "class" "tbtable"
-    &// element "tr"
-    &// element "a" >=> attributeIs "class" "musictitle"
-    &| attribute "href"
-  _titles = cursor
-    $// element "table" >=> attributeIs "class" "tbtable"
-    &// element "td" >=> attributeIs "style" "font-size: 10px;"
-    &// element "a" >=> hasAttribute "title"
-    &| attribute "title"
-  _album_titles = cursor
-    $// element "table" >=> attributeIs "class" "tbtable"
-    &// element "a" >=> attributeIs "class" "musictitle"
-    &| attribute "title"
-  links = foldl (\a l -> if length l > 0 then a ++ [head l] else a) [] (_links ++ _album_links)
-  titles = foldl (\a t -> if length t > 0 then a ++ [head t] else a) [] (_titles ++ _album_titles)
+  linkElements = getSearchResultElements document
+  albumLinkElements = getAlbumResultElements document
+  linkAttributes = map (attribute "href") linkElements
+  albumLinkAttributes = map (attribute "href") albumLinkElements
+  titleAttributes = map (attribute "title") linkElements
+  albumTitleAttributes = map (attribute "title") albumLinkElements
+  links = foldl (\a l -> if length l > 0 then a ++ [head l] else a) [] (linkAttributes ++ albumLinkAttributes)
+  titles = foldl (\a t -> if length t > 0 then a ++ [head t] else a) [] (titleAttributes ++ albumTitleAttributes)
   zipped = zipWith (\a b -> (a, b)) links titles
   result = map (\t -> AlbumItem
                  { albumTitle = unpack $ snd t
